@@ -1,9 +1,9 @@
 // modules/osmTransitDistanceProvider.js
-import { OSMPublicTransportProvider } from "./osmPublicTransportProvider.js";
+import { OSMPublicTransportationProvider } from "./osmPublicTransportionProvider.js";
 
 export class OSMTransitDistanceProvider {
   constructor() {
-    this.transit = new OSMPublicTransportProvider();
+    this.transit = new OSMPublicTransportionProvider();
   }
 
   async nearestTransitStop(bbox, lat, lng) {
