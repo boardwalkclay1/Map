@@ -32,11 +32,12 @@ function latToY(lat, zoom) {
 }
 
 export class MapCore {
-  constructor(container, tileLayer, config, storageEngine) {
+  constructor(container, tileLayer, config, storageEngine, tileCacheEngine = null) {
     this.container = container;
     this.tileLayer = tileLayer;
     this.config = config;
     this.storage = storageEngine;
+    this.tileCache = tileCacheEngine;
 
     this.tileSize = window.devicePixelRatio > 1 ? 512 : 256;
     this.zoom = config.initialZoom;
@@ -178,6 +179,39 @@ export class MapCore {
     });
   }
 
+  async _prepareTile(key, url) {
+    const existing = this.tiles.get(key);
+    if (existing) return existing;
+
+    const img = document.createElement('img');
+    img.className = 'tile';
+
+    // Offline/IndexedDB path
+    if (this.tileCache) {
+      try {
+        const blob = await this.tileCache.get(key);
+        if (blob) {
+          img.src = URL.createObjectURL(blob);
+        } else {
+          // fetch then cache
+          const resp = await fetch(url);
+          const fetchedBlob = await resp.blob();
+          img.src = URL.createObjectURL(fetchedBlob);
+          this.tileCache.set(key, fetchedBlob);
+        }
+      } catch {
+        img.src = url; // fallback
+      }
+    } else {
+      img.src = url;
+    }
+
+    img.onload = () => img.classList.add('loaded');
+    this.tileLayer.appendChild(img);
+    this.tiles.set(key, img);
+    return img;
+  }
+
   render() {
     const rect = this.container.getBoundingClientRect();
     const width = rect.width;
@@ -206,6 +240,8 @@ export class MapCore {
     this.tileLayer.style.transform =
       `translate(${width / 2}px, ${height / 2}px) scale(${scale})`;
 
+    const tasks = [];
+
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
         const wrappedX = ((x % numTiles) + numTiles) % numTiles;
@@ -214,29 +250,25 @@ export class MapCore {
         const key = `${zoomInt}/${wrappedX}/${wrappedY}`;
         tileKeysInUse.add(key);
 
-        let tile = this.tiles.get(key);
-        if (!tile) {
-          tile = document.createElement('img');
-          tile.className = 'tile';
-          const url = this.config.tileUrlTemplate
-            .replace('{z}', zoomInt)
-            .replace('{x}', wrappedX)
-            .replace('{y}', wrappedY);
-          tile.src = url;
-          tile.onload = () => tile.classList.add('loaded');
-          this.tileLayer.appendChild(tile);
-          this.tiles.set(key, tile);
-        }
+        const url = this.config.tileUrlTemplate
+          .replace('{z}', zoomInt)
+          .replace('{x}', wrappedX)
+          .replace('{y}', wrappedY);
 
-        const tilePixelX = (x - centerTileX) * this.tileSize;
-        const tilePixelY = (y - centerTileY) * this.tileSize;
-        tile.style.left = `${tilePixelX}px`;
-        tile.style.top = `${tilePixelY}px`;
-        tile.style.width = `${this.tileSize}px`;
-        tile.style.height = `${this.tileSize}px`;
+        tasks.push(
+          this._prepareTile(key, url).then(tile => {
+            const tilePixelX = (x - centerTileX) * this.tileSize;
+            const tilePixelY = (y - centerTileY) * this.tileSize;
+            tile.style.left = `${tilePixelX}px`;
+            tile.style.top = `${tilePixelY}px`;
+            tile.style.width = `${this.tileSize}px`;
+            tile.style.height = `${this.tileSize}px`;
+          })
+        );
       }
     }
 
+    // clean up unused
     this.tiles.forEach((tile, key) => {
       if (!tileKeysInUse.has(key)) {
         tile.remove();
@@ -244,7 +276,6 @@ export class MapCore {
       }
     });
 
-    // hook for external modules (markers, overlays)
     if (typeof this.onPostRender === 'function') {
       this.onPostRender();
     }
