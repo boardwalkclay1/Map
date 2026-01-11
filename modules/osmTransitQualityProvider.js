@@ -1,27 +1,21 @@
 // modules/osmTransitQualityProvider.js
-import { OSMPublicTransportProvider } from "./osmPublicTransportProvider.js";
-import { OSMTransitProvider } from "./osmTransitProvider.js";
+import { OSMPublicTransportationProvider } from "./osmPublicTransportationProvider.js";
 
 export class OSMTransitQualityProvider {
   constructor() {
-    this.stops = new OSMPublicTransportProvider();
-    this.routes = new OSMTransitProvider();
+    this.transit = new OSMPublicTransportationProvider();
   }
 
-  async computeTransitQuality(bbox) {
-    const stops = await this.stops.getStops(bbox);
-    const bus = await this.routes.getBusRoutes(bbox);
-    const train = await this.routes.getTrainRoutes(bbox);
+  async getQualityScore(bbox) {
+    const stops = await this.transit.getStops(bbox);
+    if (!stops.length) return 0;
 
-    const score = Math.min(
-      100,
-      Math.round(
-        stops.length * 0.5 +
-        bus.length * 2 +
-        train.length * 3
-      )
-    );
+    let score = 0;
 
-    return score;
+    for (const stop of stops) {
+      if (stop.frequency) score += stop.frequency;
+    }
+
+    return score / stops.length;
   }
 }
