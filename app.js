@@ -43,7 +43,7 @@ import { OSMFireProvider } from "./modules/osmFireProvider.js";
 import { OSMFireRiskProvider } from "./modules/osmFireRiskProvider.js";
 import { OSMFireStationDistanceProvider } from "./modules/osmFireStationDistanceProvider.js";
 import { OSMFitnessProvider } from "./modules/osmFitnessProvider.js";
-import { OSMFloodProovider } from "./modules/osmFloodProovider.js";
+import { OSMFloodProvider } from "./modules/osmFloodProvider.js";
 import { OSMGreenProvider } from "./modules/osmGreenProvider.js";
 import { OSMGroceryProvider } from "./modules/osmGroceryProvider.js";
 import { OSMHazardProvider } from "./modules/osmHazardProvider.js";
