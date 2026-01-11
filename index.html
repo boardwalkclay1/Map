@@ -208,6 +208,9 @@
     <div class="ui-panel">
       <button class="ui-button" id="btn-reset">⟳ Reset</button>
       <button class="ui-button" id="btn-toggle-streetview">🏙 Street View</button>
+      <button class="ui-button" id="btn-draw">✏️ Draw</button>
+      <button class="ui-button" id="btn-radius">⭕ Radius</button>
+      <button class="ui-button" id="btn-layers">☰ Layers</button>
       <span class="ui-badge" id="badge-status">Map: ready · local save enabled</span>
     </div>
 
@@ -221,6 +224,16 @@
         This panel is wired for a real panorama engine.
       </div>
     </div>
+
+    <div id="perf-panel"
+         style="position:absolute;top:12px;right:12px;padding:6px 10px;border-radius:999px;
+                background:rgba(15,23,42,0.9);border:1px solid rgba(148,163,184,0.4);
+                font-size:11px;color:#9ca3af;z-index:30;"></div>
+
+    <div id="layer-panel"
+         style="position:absolute;top:60px;right:12px;padding:8px 10px;border-radius:12px;
+                background:rgba(15,23,42,0.95);border:1px solid rgba(148,163,184,0.4);
+                font-size:12px;color:#e5e7eb;z-index:28;display:none;"></div>
   </div>
 
   <script type="module">
@@ -229,6 +242,12 @@
     import { MarkerEngine } from './modules/markerEngine.js';
     import { StreetViewShell } from './modules/streetViewShell.js';
     import { initUIOverlay } from './modules/uiOverlay.js';
+
+    import { PopupEngine } from './modules/popupEngine.js';
+    import { DrawingEngine } from './modules/drawingEngine.js';
+    import { RadiusTool } from './modules/radiusTool.js';
+    import { LayerManager } from './modules/layerManager.js';
+    import { PerfMonitor } from './modules/perfMonitor.js';
 
     const MAP_CONFIG = {
       tileUrlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -245,18 +264,31 @@
       const tileLayer = document.getElementById('tile-layer');
       const markerLayer = document.getElementById('marker-layer');
       const coordsLabel = document.getElementById('coords-label');
+      const perfPanel = document.getElementById('perf-panel');
+      const layerPanel = document.getElementById('layer-panel');
 
       const storage = new StorageEngine(MAP_CONFIG.storageKey);
       const mapCore = new MapCore(mapEl, tileLayer, MAP_CONFIG, storage);
       const markerEngine = new MarkerEngine(mapCore, markerLayer, storage);
       const streetViewShell = new StreetViewShell(mapCore);
 
+      const popupEngine = new PopupEngine(mapCore);
+      const drawingEngine = new DrawingEngine(mapCore, popupEngine);
+      const radiusTool = new RadiusTool(mapCore, markerEngine, popupEngine);
+      const layerManager = new LayerManager(mapCore, markerEngine, drawingEngine, radiusTool, layerPanel);
+      const perfMonitor = new PerfMonitor(mapCore, perfPanel);
+
       initUIOverlay({
         mapCore,
         markerEngine,
         storage,
         streetViewShell,
-        coordsLabel
+        coordsLabel,
+        popupEngine,
+        drawingEngine,
+        radiusTool,
+        layerManager,
+        perfMonitor
       });
     });
   </script>
