@@ -1,989 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Laundry Bubbles – Cosmic Map</title>
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  html, body {
-    height: 100%;
-    overflow: hidden;
-    background: #04020a;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    color: #f7f5ff;
-  }
-
-  /* ========= APP LAYOUT ========= */
-  #app {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  #toolbar {
-    flex: 0 0 auto;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background:
-      radial-gradient(circle at -20% 0%, rgba(180,140,255,0.6) 0, transparent 55%),
-      radial-gradient(circle at 120% 0%, rgba(120,220,255,0.5) 0, transparent 60%),
-      linear-gradient(to right, #060418, #0a0625, #02000f);
-    box-shadow: 0 4px 25px rgba(0,0,0,0.7);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    position: relative;
-    z-index: 50;
-  }
-
-  #brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  #brand-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 40%;
-    background:
-      radial-gradient(circle at 30% 30%, #ffffff 0, #f3f2ff 25%, #d6cfff 50%, #8c7eff 80%, #21165d 100%);
-    box-shadow: 0 0 14px rgba(140,120,255,0.9);
-    position: relative;
-    overflow: hidden;
-  }
-  #brand-icon::before {
-    content: "";
-    position: absolute;
-    inset: 4px;
-    border-radius: 30%;
-    background:
-      radial-gradient(circle at 30% 25%, rgba(255,255,255,0.95) 0, transparent 45%),
-      radial-gradient(circle at 70% 80%, rgba(177,223,255,0.95) 0, transparent 50%),
-      radial-gradient(circle, rgba(78,50,210,0.8) 0, transparent 65%);
-  }
-  #brand-icon::after {
-    /* washing machine door */
-    content: "";
-    position: absolute;
-    width: 9px;
-    height: 9px;
-    border-radius: 999px;
-    border: 2px solid rgba(255,255,255,0.9);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    box-shadow: 0 0 6px rgba(255,255,255,0.8);
-  }
-
-  #brand-text {
-    display: flex;
-    flex-direction: column;
-  }
-
-  #brand-title {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #f8f6ff;
-  }
-
-  #brand-subtitle {
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: #aaa3ff;
-  }
-
-  .btn {
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.18);
-    padding: 6px 12px;
-    font-size: 12px;
-    background: rgba(10,6,40,0.7);
-    color: #f5f2ff;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    backdrop-filter: blur(8px);
-    transition:
-      background 0.13s,
-      transform 0.13s,
-      box-shadow 0.13s,
-      border-color 0.13s;
-  }
-  .btn span.icon {
-    font-size: 13px;
-  }
-  .btn:hover {
-    background: rgba(145,115,255,0.9);
-    border-color: rgba(210,196,255,0.9);
-    box-shadow: 0 0 14px rgba(155,125,255,0.85);
-    transform: translateY(-1px);
-  }
-  .btn:active {
-    transform: translateY(0);
-    box-shadow: none;
-  }
-
-  #hint {
-    font-size: 11px;
-    color: #d0cbff;
-    opacity: 0.9;
-  }
-
-  #map-shell {
-    position: relative;
-    flex: 1 1 auto;
-    overflow: hidden;
-    background:
-      radial-gradient(circle at 0% 100%, rgba(140,110,255,0.5) 0, transparent 55%),
-      radial-gradient(circle at 100% 0%, rgba(110,210,255,0.45) 0, transparent 60%),
-      radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05) 0, transparent 65%),
-      #02000b;
-  }
-
-  /* ========= FLOATING BUBBLES BACKGROUND ========= */
-  .bubble {
-    position: absolute;
-    border-radius: 999px;
-    background:
-      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.95) 0, rgba(255,255,255,0.2) 30%, transparent 60%),
-      radial-gradient(circle at 80% 80%, rgba(150,220,255,0.7) 0, transparent 60%),
-      radial-gradient(circle at 50% 100%, rgba(140,110,255,0.8) 0, transparent 70%);
-    box-shadow:
-      0 0 10px rgba(200,235,255,0.6),
-      0 0 26px rgba(130,110,255,0.6);
-    opacity: 0.6;
-    mix-blend-mode: screen;
-    animation: floatUp 18s linear infinite;
-  }
-
-  .bubble.small {
-    width: 32px;
-    height: 32px;
-    animation-duration: 12s;
-  }
-  .bubble.medium {
-    width: 60px;
-    height: 60px;
-    animation-duration: 18s;
-  }
-  .bubble.large {
-    width: 110px;
-    height: 110px;
-    animation-duration: 26s;
-  }
-
-  @keyframes floatUp {
-    0% {
-      transform: translate3d(var(--bx, 0px), 100%, 0) scale(1);
+  <meta charset="UTF-8" />
+  <title>Cosmic Map Engine</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+    }
+    #app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    #map {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      cursor: grab;
+      background: radial-gradient(circle at top, #0f172a 0, #020617 55%);
+    }
+    #map.dragging {
+      cursor: grabbing;
+    }
+    .tile-layer {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: 0 0;
+    }
+    .tile {
+      position: absolute;
+      image-rendering: auto;
+      transition: opacity 0.25s ease-out;
       opacity: 0;
     }
-    15% {
-      opacity: 0.75;
-    }
-    75% {
-      opacity: 0.7;
-    }
-    100% {
-      transform: translate3d(var(--bx, 0px), -120%, 0) scale(1.12);
-      opacity: 0;
-    }
-  }
-
-  /* ========= MAP LAYERS ========= */
-  #map {
-    position: absolute;
-    inset: 26px 22px 26px 22px;
-    border-radius: 24px;
-    overflow: hidden;
-    background: radial-gradient(circle at 50% 0%, #160f3b 0, #050210 55%, #010009 100%);
-    box-shadow:
-      0 24px 35px rgba(0,0,0,0.9),
-      0 0 0 1px rgba(255,255,255,0.06);
-    cursor: grab;
-    user-select: none;
-  }
-
-  #map.dragging {
-    cursor: grabbing;
-  }
-
-  .tile-layer {
-    position: absolute;
-    inset: 0;
-  }
-  .tile {
-    position: absolute;
-    width: 256px;
-    height: 256px;
-    image-rendering: pixelated;
-  }
-
-  .overlay-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  #overlay-canvas {
-    width: 100%;
-    height: 100%;
-  }
-
-  .marker-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  /* ========= MARKERS ========= */
-  .marker {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 999px;
-    transform: translate(-50%, -50%);
-    background:
-      radial-gradient(circle at 20% 20%, #ffffff 0, #f7f3ff 20%, #e9ddff 40%, #a88dff 65%, #25146c 100%);
-    box-shadow:
-      0 0 10px rgba(176,149,255,0.9),
-      0 0 24px rgba(80,60,210,0.9);
-    pointer-events: auto;
-    cursor: pointer;
-  }
-
-  .marker::after {
-    /* mini washer door */
-    content: "";
-    position: absolute;
-    width: 9px;
-    height: 9px;
-    border-radius: 999px;
-    border: 2px solid rgba(255,255,255,0.9);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    box-shadow: 0 0 5px rgba(255,255,255,0.9);
-  }
-
-  .marker.user {
-    width: 18px;
-    height: 18px;
-    background:
-      radial-gradient(circle at 30% 20%, #ffffff 0, #f8feff 16%, #bdf3ff 38%, #38b9ff 65%, #0036ff 100%);
-    box-shadow:
-      0 0 14px rgba(0,210,255,0.95),
-      0 0 26px rgba(0,153,255,0.85);
-    animation: userPulse 1.6s infinite;
-  }
-
-  .marker.user::after {
-    width: 7px;
-    height: 7px;
-    border-color: rgba(255,255,255,0.95);
-  }
-
-  @keyframes userPulse {
-    0% {
-      transform: translate(-50%, -50%) scale(1);
-      box-shadow: 0 0 8px rgba(0,210,255,0.95);
+    .tile.loaded {
       opacity: 1;
     }
-    65% {
-      transform: translate(-50%, -50%) scale(1.7);
-      box-shadow: 0 0 22px rgba(0,210,255,0);
-      opacity: 0;
+    .marker-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
     }
-    100% {
+    .marker {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid #0ea5e9;
+      background: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.9);
       transform: translate(-50%, -50%) scale(1);
-      box-shadow: 0 0 8px rgba(0,210,255,0);
-      opacity: 0;
+      pointer-events: auto;
+      cursor: pointer;
+      transition: transform 0.15s ease-out, box-shadow 0.2s ease-out;
     }
-  }
-
-  .marker.selected {
-    outline: 2px solid rgba(255,255,255,0.95);
-    outline-offset: 3px;
-  }
-
-  /* ========= POPUP ========= */
-  .popup {
-    position: absolute;
-    min-width: 140px;
-    max-width: 220px;
-    padding: 8px 10px;
-    background: rgba(16,10,50,0.96);
-    color: #f5f2ff;
-    border-radius: 14px;
-    border: 1px solid rgba(215,195,255,0.55);
-    box-shadow:
-      0 18px 26px rgba(0,0,0,0.9),
-      0 0 18px rgba(144,120,255,0.8);
-    font-size: 12px;
-    transform: translate(-50%, calc(-100% - 12px));
-    pointer-events: auto;
-    z-index: 30;
-  }
-  .popup::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -7px;
-    transform: translateX(-50%);
-    border-width: 7px 7px 0 7px;
-    border-style: solid;
-    border-color: rgba(16,10,50,0.96) transparent transparent transparent;
-  }
-  .popup-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #b6a5ff;
-    margin-bottom: 3px;
-  }
-  .popup-body {
-    font-size: 12px;
-    color: #f8f6ff;
-    margin-bottom: 5px;
-  }
-  .popup-meta {
-    font-size: 11px;
-    color: #ccc6ff;
-  }
-
-  /* ========= IN-MAP CONTROLS ========= */
-  #zoom-controls {
-    position: absolute;
-    right: 12px;
-    top: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    z-index: 40;
-  }
-
-  .zoom-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(8,6,35,0.96);
-    color: #f5f2ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    transition: background 0.12s, transform 0.12s, box-shadow 0.12s;
-  }
-  .zoom-btn:hover {
-    background: rgba(135,110,255,0.97);
-    box-shadow: 0 0 14px rgba(135,110,255,0.8);
-    transform: translateY(-1px);
-  }
-
-  #status {
-    position: absolute;
-    left: 12px;
-    bottom: 12px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    background: rgba(6,4,25,0.9);
-    border: 1px solid rgba(206,195,255,0.35);
-    color: #e8e3ff;
-    pointer-events: none;
-    backdrop-filter: blur(8px);
-  }
-  #status strong {
-    color: #b3a6ff;
-  }
-
-  /* ========= RADIUS BUBBLE SELECTION ========= */
-  .selection-hint {
-    position: absolute;
-    top: 10px;
-    left: 14px;
-    font-size: 11px;
-    color: #d7d2ff;
-    background: rgba(8,6,35,0.92);
-    padding: 4px 8px;
-    border-radius: 999px;
-    border: 1px solid rgba(215,205,255,0.4);
-    backdrop-filter: blur(10px);
-    z-index: 40;
-  }
-</style>
+    .marker.selected {
+      transform: translate(-50%, -50%) scale(1.3);
+      box-shadow: 0 0 20px rgba(129, 140, 248, 0.95);
+      border-color: #a855f7;
+      background: #6366f1;
+    }
+    .ui-panel {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      backdrop-filter: blur(16px);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      z-index: 20;
+    }
+    .ui-button {
+      border: none;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(30, 64, 175, 0.9);
+      color: #e5e7eb;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+      transition: background 0.15s ease-out, transform 0.1s ease-out, box-shadow 0.15s;
+    }
+    .ui-button:hover {
+      background: rgba(79, 70, 229, 0.95);
+      transform: translateY(-1px);
+      box-shadow: 0 0 16px rgba(129, 140, 248, 0.8);
+    }
+    .ui-button:active {
+      transform: translateY(0);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+    }
+    .ui-badge {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    #streetview-panel {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      width: 360px;
+      height: 220px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #020617 0, #0b1120 50%, #000 100%);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.95);
+      display: none;
+      flex-direction: column;
+      z-index: 25;
+      backdrop-filter: blur(18px);
+    }
+    #streetview-panel.active {
+      display: flex;
+    }
+    #streetview-header {
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(to right, rgba(37, 99, 235, 0.35), rgba(147, 51, 234, 0.3));
+    }
+    #streetview-close {
+      border: none;
+      background: transparent;
+      color: #cbd5f5;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #streetview-content {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 12px;
+      padding: 8px;
+      text-align: center;
+    }
+    #streetview-pegman {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #facc15 0, #f97316 40%, #b91c1c 100%);
+      border: 2px solid #fbbf24;
+      box-shadow: 0 0 16px rgba(250, 204, 21, 0.9);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #111827;
+      font-size: 14px;
+      cursor: grab;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 15;
+    }
+    #streetview-pegman.dragging {
+      cursor: grabbing;
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    #coords-label {
+      position: absolute;
+      bottom: 10px;
+      left: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      font-size: 11px;
+      color: #9ca3af;
+      z-index: 18;
+      pointer-events: none;
+      max-width: 60%;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  </style>
 </head>
 <body>
-<div id="app">
-  <div id="toolbar">
-    <div id="brand">
-      <div id="brand-icon"></div>
-      <div id="brand-text">
-        <div id="brand-title">Laundry Bubbles</div>
-        <div id="brand-subtitle">COSMIC WASH MAP</div>
-      </div>
-    </div>
-
-    <button id="locate-btn" class="btn">
-      <span class="icon">📍</span>
-      <span>My location</span>
-    </button>
-
-    <button id="route-btn" class="btn">
-      <span class="icon">🧵</span>
-      <span>Route last 2</span>
-    </button>
-
-    <button id="clear-btn" class="btn">
-      <span class="icon">🧼</span>
-      <span>Clear markers</span>
-    </button>
-
-    <div style="flex: 1"></div>
-
-    <div id="hint">
-      Click: add bubble · Click bubble: popup · Shift + drag: radius selection · Scroll / +/-: zoom
-    </div>
-  </div>
-
-  <div id="map-shell">
-    <!-- floating bubbles -->
-    <div class="bubble small" style="left: 5%; --bx:-10px; animation-delay: -2s;"></div>
-    <div class="bubble medium" style="left: 22%; --bx:0px; animation-delay: -6s;"></div>
-    <div class="bubble large" style="left: 45%; --bx:20px; animation-delay: -11s;"></div>
-    <div class="bubble medium" style="left: 70%; --bx:-15px; animation-delay: -4s;"></div>
-    <div class="bubble small" style="left: 90%; --bx:-5px; animation-delay: -8s;"></div>
-
+  <div id="app">
     <div id="map">
       <div class="tile-layer" id="tile-layer"></div>
-      <canvas class="overlay-layer" id="overlay-canvas"></canvas>
       <div class="marker-layer" id="marker-layer"></div>
+      <div id="streetview-pegman" title="Drag onto map for street view">⬤</div>
+      <div id="coords-label"></div>
+    </div>
 
-      <div id="zoom-controls">
-        <div id="zoom-in" class="zoom-btn">+</div>
-        <div id="zoom-out" class="zoom-btn">−</div>
+    <div class="ui-panel">
+      <button class="ui-button" id="btn-reset">⟳ Reset</button>
+      <button class="ui-button" id="btn-toggle-streetview">🏙 Street View</button>
+      <span class="ui-badge" id="badge-status">Map: ready · local save enabled</span>
+    </div>
+
+    <div id="streetview-panel">
+      <div id="streetview-header">
+        <span>Street View (shell)</span>
+        <button id="streetview-close">✕</button>
       </div>
-
-      <div id="status">Loading…</div>
-      <div class="selection-hint">Shift + drag anywhere to bubble-select washers</div>
+      <div id="streetview-content">
+        Drop Pegman on the map to simulate a street-view point.<br />
+        This panel is wired for a real panorama engine.
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-  // ========= CORE CONSTANTS – DECLARED FIRST =========
-  const TILE_SIZE = 256;
+  <script type="module">
+    import { StorageEngine } from './modules/storageEngine.js';
+    import { MapCore } from './modules/mapCore.js';
+    import { MarkerEngine } from './modules/markerEngine.js';
+    import { StreetViewShell } from './modules/streetViewShell.js';
+    import { initUIOverlay } from './modules/uiOverlay.js';
 
-  // ========= DOM HOOKS =========
-  const mapEl = document.getElementById('map');
-  const tileLayer = document.getElementById('tile-layer');
-  const markerLayer = document.getElementById('marker-layer');
-  const overlayCanvas = document.getElementById('overlay-canvas');
-  const overlayCtx = overlayCanvas.getContext('2d');
-  const statusEl = document.getElementById('status');
-
-  const locateBtn = document.getElementById('locate-btn');
-  const routeBtn = document.getElementById('route-btn');
-  const clearBtn = document.getElementById('clear-btn');
-  const zoomInBtn = document.getElementById('zoom-in');
-  const zoomOutBtn = document.getElementById('zoom-out');
-
-  // ========= MAP STATE =========
-  let mapWidth = 0;
-  let mapHeight = 0;
-
-  let zoom = 3;
-  let center = { lat: 0, lng: 0 };
-
-  let isDragging = false;
-  let dragLast = { x: 0, y: 0 };
-
-  const markers = [];
-  let popupEl = null;
-  let selectedMarkers = [];
-
-  // radius selection
-  let radiusSelecting = false;
-  let radiusStart = null;
-  let radiusEnd = null;
-
-  // route line
-  let routeLine = null;
-
-  // ========= RESIZE =========
-  function resize() {
-    mapWidth = mapEl.clientWidth;
-    mapHeight = mapEl.clientHeight;
-    overlayCanvas.width = mapWidth;
-    overlayCanvas.height = mapHeight;
-    render();
-  }
-  window.addEventListener('resize', resize);
-
-  // ========= WEB MERCATOR HELPERS =========
-  function lngToX(lng, z) {
-    return (lng + 180) / 360 * (TILE_SIZE * Math.pow(2, z));
-  }
-
-  function latToY(lat, z) {
-    const rad = lat * Math.PI / 180;
-    const n = Math.log(Math.tan(Math.PI / 4 + rad / 2));
-    return (1 - n / Math.PI) / 2 * (TILE_SIZE * Math.pow(2, z));
-  }
-
-  function xToLng(x, z) {
-    return x / (TILE_SIZE * Math.pow(2, z)) * 360 - 180;
-  }
-
-  function yToLat(y, z) {
-    const n = Math.PI - 2 * Math.PI * y / (TILE_SIZE * Math.pow(2, z));
-    return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
-  }
-
-  function latLngToGlobalPixel(lat, lng, z) {
-    return {
-      x: lngToX(lng, z),
-      y: latToY(lat, z)
-    };
-  }
-
-  function globalPixelToLatLng(x, y, z) {
-    return {
-      lat: yToLat(y, z),
-      lng: xToLng(x, z)
-    };
-  }
-
-  function latLngToScreen(lat, lng) {
-    const centerPx = latLngToGlobalPixel(center.lat, center.lng, zoom);
-    const ptPx = latLngToGlobalPixel(lat, lng, zoom);
-    const dx = ptPx.x - centerPx.x;
-    const dy = ptPx.y - centerPx.y;
-    return {
-      x: mapWidth / 2 + dx,
-      y: mapHeight / 2 + dy
-    };
-  }
-
-  function screenToLatLng(x, y) {
-    const centerPx = latLngToGlobalPixel(center.lat, center.lng, zoom);
-    const worldX = centerPx.x + (x - mapWidth / 2);
-    const worldY = centerPx.y + (y - mapHeight / 2);
-    return globalPixelToLatLng(worldX, worldY, zoom);
-  }
-
-  // ========= TILE RENDERING =========
-  function renderTiles() {
-    tileLayer.innerHTML = '';
-    const centerPx = latLngToGlobalPixel(center.lat, center.lng, zoom);
-
-    const startX = centerPx.x - mapWidth / 2;
-    const startY = centerPx.y - mapHeight / 2;
-
-    const startTileX = Math.floor(startX / TILE_SIZE);
-    const startTileY = Math.floor(startY / TILE_SIZE);
-
-    const endTileX = Math.floor((startX + mapWidth) / TILE_SIZE);
-    const endTileY = Math.floor((startY + mapHeight) / TILE_SIZE);
-
-    const maxTileIndex = Math.pow(2, zoom);
-
-    for (let tx = startTileX - 1; tx <= endTileX + 1; tx++) {
-      for (let ty = startTileY - 1; ty <= endTileY + 1; ty++) {
-        const tileX = ((tx % maxTileIndex) + maxTileIndex) % maxTileIndex;
-        const tileY = ty;
-        if (tileY < 0 || tileY >= maxTileIndex) continue;
-
-        const img = document.createElement('img');
-        img.className = 'tile';
-        img.draggable = false;
-        img.src = `https://tile.openstreetmap.org/${zoom}/${tileX}/${tileY}.png`;
-
-        const px = tx * TILE_SIZE - startX;
-        const py = ty * TILE_SIZE - startY;
-        img.style.transform = `translate(${px}px, ${py}px)`;
-
-        tileLayer.appendChild(img);
-      }
-    }
-  }
-
-  // ========= MARKER ENGINE =========
-  function addMarker(lat, lng, opts = {}) {
-    const el = document.createElement('div');
-    el.className = 'marker';
-    if (opts.type === 'user') el.classList.add('user');
-
-    const marker = {
-      id: Date.now() + Math.random(),
-      lat,
-      lng,
-      el,
-      opts
+    const MAP_CONFIG = {
+      tileUrlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      minZoom: 2,
+      maxZoom: 20,
+      overfetchTiles: 1,
+      initialCenter: { lat: 33.7490, lng: -84.3880 }, // Atlanta
+      initialZoom: 12,
+      storageKey: 'cosmicMapState_v1'
     };
 
-    markers.push(marker);
-    markerLayer.appendChild(el);
-    renderMarker(marker);
+    window.addEventListener('DOMContentLoaded', () => {
+      const mapEl = document.getElementById('map');
+      const tileLayer = document.getElementById('tile-layer');
+      const markerLayer = document.getElementById('marker-layer');
+      const coordsLabel = document.getElementById('coords-label');
 
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      onMarkerClick(marker);
+      const storage = new StorageEngine(MAP_CONFIG.storageKey);
+      const mapCore = new MapCore(mapEl, tileLayer, MAP_CONFIG, storage);
+      const markerEngine = new MarkerEngine(mapCore, markerLayer, storage);
+      const streetViewShell = new StreetViewShell(mapCore);
+
+      initUIOverlay({
+        mapCore,
+        markerEngine,
+        storage,
+        streetViewShell,
+        coordsLabel
+      });
     });
-
-    return marker;
-  }
-
-  function renderMarker(marker) {
-    const pt = latLngToScreen(marker.lat, marker.lng);
-    marker.el.style.left = pt.x + 'px';
-    marker.el.style.top = pt.y + 'px';
-  }
-
-  function renderMarkers() {
-    markers.forEach(renderMarker);
-  }
-
-  function onMarkerClick(marker) {
-    selectedMarkers = [marker];
-    document.querySelectorAll('.marker.selected').forEach(el => el.classList.remove('selected'));
-    marker.el.classList.add('selected');
-
-    const pt = latLngToScreen(marker.lat, marker.lng);
-    showPopup(pt.x, pt.y, {
-      title: marker.opts.type === 'user' ? 'You are here' : 'Laundry bubble',
-      body: `Lat ${marker.lat.toFixed(4)}, Lng ${marker.lng.toFixed(4)}`,
-      meta: marker.opts.type === 'user'
-        ? 'Your cosmic washer anchor'
-        : 'Fresh drop in the washfield'
-    });
-  }
-
-  function clearMarkers() {
-    markers.forEach(m => m.el.remove());
-    markers.length = 0;
-    selectedMarkers = [];
-    routeLine = null;
-    hidePopup();
-    updateStatus('All bubbles cleared.');
-  }
-
-  // ========= POPUP =========
-  function showPopup(x, y, { title, body, meta }) {
-    hidePopup();
-    popupEl = document.createElement('div');
-    popupEl.className = 'popup';
-    popupEl.innerHTML = `
-      <div class="popup-title">${title}</div>
-      <div class="popup-body">${body}</div>
-      <div class="popup-meta">${meta}</div>
-    `;
-    mapEl.appendChild(popupEl);
-    popupEl.style.left = x + 'px';
-    popupEl.style.top = y + 'px';
-  }
-
-  function hidePopup() {
-    if (popupEl) {
-      popupEl.remove();
-      popupEl = null;
-    }
-  }
-
-  // ========= DISTANCE HELPERS =========
-  function distanceKm(lat1, lng1, lat2, lng2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(lat1 * Math.PI / 180) *
-      Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLng / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
-
-  // ========= OVERLAY (ROUTE + RADIUS BUBBLE) =========
-  function renderOverlay() {
-    overlayCtx.clearRect(0, 0, mapWidth, mapHeight);
-
-    // radius bubble
-    if (radiusSelecting && radiusStart && radiusEnd) {
-      overlayCtx.save();
-      const dx = radiusEnd.x - radiusStart.x;
-      const dy = radiusEnd.y - radiusStart.y;
-      const r = Math.sqrt(dx * dx + dy * dy);
-
-      overlayCtx.beginPath();
-      overlayCtx.arc(radiusStart.x, radiusStart.y, r, 0, Math.PI * 2);
-      const gradient = overlayCtx.createRadialGradient(
-        radiusStart.x - r / 3, radiusStart.y - r / 3, r * 0.2,
-        radiusStart.x, radiusStart.y, r
-      );
-      gradient.addColorStop(0, 'rgba(255,255,255,0.10)');
-      gradient.addColorStop(0.5, 'rgba(165,140,255,0.18)');
-      gradient.addColorStop(1, 'rgba(84,130,255,0.05)');
-      overlayCtx.fillStyle = gradient;
-      overlayCtx.fill();
-
-      overlayCtx.lineWidth = 2;
-      overlayCtx.strokeStyle = 'rgba(205,190,255,0.9)';
-      overlayCtx.setLineDash([10, 5]);
-      overlayCtx.stroke();
-      overlayCtx.restore();
-    }
-
-    // route line
-    if (routeLine) {
-      const fromPt = latLngToScreen(routeLine.from.lat, routeLine.from.lng);
-      const toPt = latLngToScreen(routeLine.to.lat, routeLine.to.lng);
-
-      overlayCtx.save();
-      overlayCtx.lineWidth = 3;
-      overlayCtx.strokeStyle = 'rgba(0,230,255,0.95)';
-      overlayCtx.setLineDash([9, 7]);
-      overlayCtx.beginPath();
-      overlayCtx.moveTo(fromPt.x, fromPt.y);
-      overlayCtx.lineTo(toPt.x, toPt.y);
-      overlayCtx.stroke();
-
-      // glow duplicate
-      overlayCtx.lineWidth = 7;
-      overlayCtx.strokeStyle = 'rgba(0,230,255,0.25)';
-      overlayCtx.setLineDash([]);
-      overlayCtx.beginPath();
-      overlayCtx.moveTo(fromPt.x, fromPt.y);
-      overlayCtx.lineTo(toPt.x, toPt.y);
-      overlayCtx.stroke();
-
-      overlayCtx.restore();
-    }
-  }
-
-  // ========= RADIUS BUBBLE SELECTION =========
-  function beginRadiusSelection(x, y) {
-    radiusSelecting = true;
-    radiusStart = { x, y };
-    radiusEnd = { x, y };
-  }
-
-  function updateRadiusSelection(x, y) {
-    if (!radiusSelecting) return;
-    radiusEnd = { x, y };
-    renderOverlay();
-  }
-
-  function endRadiusSelection() {
-    if (!radiusSelecting || !radiusStart || !radiusEnd) {
-      radiusSelecting = false;
-      radiusStart = radiusEnd = null;
-      renderOverlay();
-      return;
-    }
-
-    const dx = radiusEnd.x - radiusStart.x;
-    const dy = radiusEnd.y - radiusStart.y;
-    const r = Math.sqrt(dx * dx + dy * dy);
-
-    const centerLatLng = screenToLatLng(radiusStart.x, radiusStart.y);
-    const edgeLatLng = screenToLatLng(radiusStart.x + r, radiusStart.y);
-    const radiusKmVal = distanceKm(centerLatLng.lat, centerLatLng.lng, edgeLatLng.lat, edgeLatLng.lng);
-
-    selectedMarkers = [];
-    document.querySelectorAll('.marker.selected').forEach(el => el.classList.remove('selected'));
-
-    markers.forEach(m => {
-      const d = distanceKm(centerLatLng.lat, centerLatLng.lng, m.lat, m.lng);
-      if (d <= radiusKmVal) {
-        selectedMarkers.push(m);
-        m.el.classList.add('selected');
-      }
-    });
-
-    updateStatus(`Bubble radius: ${radiusKmVal.toFixed(2)} km · Selected washers: ${selectedMarkers.length}`);
-
-    radiusSelecting = false;
-    radiusStart = radiusEnd = null;
-    renderOverlay();
-  }
-
-  // ========= ROUTE BETWEEN LAST TWO =========
-  function setRouteBetweenLastTwoMarkers() {
-    if (markers.length < 2) {
-      updateStatus('Need at least 2 bubbles to weave a route.');
-      return;
-    }
-    const a = markers[markers.length - 2];
-    const b = markers[markers.length - 1];
-    routeLine = {
-      from: { lat: a.lat, lng: a.lng },
-      to: { lat: b.lat, lng: b.lng }
-    };
-    const dist = distanceKm(a.lat, a.lng, b.lat, b.lng).toFixed(2);
-    updateStatus(`Route drawn between last 2 bubbles · ${dist} km`);
-    renderOverlay();
-  }
-
-  // ========= MAP INTERACTION =========
-  mapEl.addEventListener('mousedown', (e) => {
-    const rect = mapEl.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    dragLast = { x: e.clientX, y: e.clientY };
-
-    if (e.shiftKey) {
-      beginRadiusSelection(x, y);
-      return;
-    }
-
-    isDragging = true;
-    mapEl.classList.add('dragging');
-  });
-
-  window.addEventListener('mousemove', (e) => {
-    const rect = mapEl.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    if (radiusSelecting) {
-      updateRadiusSelection(x, y);
-      return;
-    }
-
-    if (!isDragging) return;
-
-    const dx = e.clientX - dragLast.x;
-    const dy = e.clientY - dragLast.y;
-    dragLast = { x: e.clientX, y: e.clientY };
-
-    const centerPx = latLngToGlobalPixel(center.lat, center.lng, zoom);
-    const newCenterPx = {
-      x: centerPx.x - dx,
-      y: centerPx.y - dy
-    };
-    center = globalPixelToLatLng(newCenterPx.x, newCenterPx.y, zoom);
-    render();
-  });
-
-  window.addEventListener('mouseup', () => {
-    if (radiusSelecting) {
-      endRadiusSelection();
-      return;
-    }
-    if (isDragging) {
-      isDragging = false;
-      mapEl.classList.remove('dragging');
-    }
-  });
-
-  mapEl.addEventListener('click', (e) => {
-    if (radiusSelecting || isDragging) return;
-
-    const rect = mapEl.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const latlng = screenToLatLng(x, y);
-    const m = addMarker(latlng.lat, latlng.lng, { type: 'normal' });
-    updateStatus(`Bubble placed @ ${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}`);
-  });
-
-  mapEl.addEventListener('dblclick', (e) => {
-    e.preventDefault();
-    const rect = mapEl.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    zoomAtPoint(1, x, y);
-  });
-
-  mapEl.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const rect = mapEl.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const delta = e.deltaY > 0 ? -1 : 1;
-    zoomAtPoint(delta, x, y);
-  }, { passive: false });
-
-  function zoomAtPoint(delta, screenX, screenY) {
-    const newZoom = Math.min(18, Math.max(2, zoom + delta));
-    if (newZoom === zoom) return;
-
-    const before = screenToLatLng(screenX, screenY);
-    zoom = newZoom;
-    const after = screenToLatLng(screenX, screenY);
-
-    center.lat += before.lat - after.lat;
-    center.lng += before.lng - after.lng;
-
-    updateStatus(`Zoom level: ${zoom}`);
-    render();
-  }
-
-  // ========= BUTTONS =========
-  zoomInBtn.addEventListener('click', () => {
-    zoomAtPoint(1, mapWidth / 2, mapHeight / 2);
-  });
-  zoomOutBtn.addEventListener('click', () => {
-    zoomAtPoint(-1, mapWidth / 2, mapHeight / 2);
-  });
-
-  clearBtn.addEventListener('click', () => {
-    clearMarkers();
-    renderOverlay();
-  });
-
-  routeBtn.addEventListener('click', () => {
-    setRouteBetweenLastTwoMarkers();
-  });
-
-  // ========= GEOLOCATION =========
-  locateBtn.addEventListener('click', () => {
-    if (!navigator.geolocation) {
-      updateStatus('Geolocation not supported in this browser.');
-      return;
-    }
-    updateStatus('Finding your cosmic washer…');
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const { latitude, longitude } = pos.coords;
-      center = { lat: latitude, lng: longitude };
-      zoom = Math.max(12, zoom);
-      addMarker(latitude, longitude, { type: 'user' });
-      updateStatus('Centered on your location.');
-      render();
-    }, () => {
-      updateStatus('Could not fetch your location.');
-    });
-  });
-
-  // ========= STATUS =========
-  function updateStatus(msg) {
-    statusEl.innerHTML = `<strong>Status:</strong> ${msg}`;
-  }
-
-  // ========= RENDER =========
-  function render() {
-    renderTiles();
-    renderMarkers();
-    renderOverlay();
-  }
-
-  // ========= INIT =========
-  resize();
-  render();
-  updateStatus('Ready. Click map to drop Laundry Bubbles.');
-</script>
+  </script>
 </body>
 </html>
