@@ -43,7 +43,7 @@ import { OSMFireProvider } from "./modules/osmFireProvider.js";
 import { OSMFireRiskProvider } from "./modules/osmFireRiskProvider.js";
 import { OSMFireStationDistanceProvider } from "./modules/osmFireStationDistanceProvider.js";
 import { OSMFitnessProvider } from "./modules/osmFitnessProvider.js";
-import { OSMFloodProvider } from "./modules/osmFloodProvider.js";
+import { OSMFloodProovider } from "./modules/osmFloodProovider.js";
 import { OSMGreenProvider } from "./modules/osmGreenProvider.js";
 import { OSMGroceryProvider } from "./modules/osmGroceryProvider.js";
 import { OSMHazardProvider } from "./modules/osmHazardProvider.js";
@@ -129,3 +129,154 @@ import { TreeSpeciesProvider } from "./modules/tree/treeSpeciesProvider.js";
 import { TreeStormDamageProvider } from "./modules/tree/treeStormDamageProvider.js";
 import { TreeWorksiteSuitabilityProvider } from "./modules/tree/treeWorksiteSuitabilityProvider.js";
 import { TreeRiskAssessmentProvider } from "./modules/tree/treeRiskAssessmentProvider.js";
+
+// -----------------------------------------------------
+// MAP INITIALIZATION
+// -----------------------------------------------------
+const core = new MapCore({
+  targetId: "map",
+  center: [33.7490, -84.3880],
+  zoom: 13
+});
+
+const layers = new LayerManager(core);
+const markers = new MarkerEngine(core);
+const drawing = new DrawingEngine(core);
+const radius = new RadiusTool(core);
+const popups = new PopupEngine(core);
+const tiles = new TileCacheEngine(core);
+const storage = new StorageEngine();
+const perf = new PerfMonitor(core);
+const streetView = new StreetViewShell(core);
+
+// expose globally
+window.Map = core;
+window.MapLayers = layers;
+window.MapMarkers = markers;
+window.MapDrawing = drawing;
+window.MapRadius = radius;
+window.MapPopups = popups;
+window.MapTiles = tiles;
+window.MapStorage = storage;
+window.MapPerf = perf;
+window.MapStreetView = streetView;
+
+// -----------------------------------------------------
+// GLOBAL ENGINE REGISTRY
+// -----------------------------------------------------
+window.MapEngines = {
+  osm: {
+    accessibility: OSMAccessibilityProvider,
+    accessibilityScore: OSMAccessibilityScoreProvider,
+    address: OSMAddressProvider,
+    airQuality: OSMAirQualityProvider,
+    amenity: OSMAmenityProvider,
+    bikeability: OSMBikeabilityProvider,
+    boundary: OSMBoundaryProvider,
+    bridge: OSMBridgeProvider,
+    bridgeDetail: OSMBridgeDetailProvider,
+    buildingHeight: OSMBuildingHeightProvider,
+    cafe: OSMCafeProvider,
+    cemetery: OSMCemeteryProvider,
+    chargingDetail: OSMChargingDetailProvidr,
+    cluster: OSMClusterProvider,
+    crimeProxy: OSMCrimeProxyProvider,
+    cultural: OSMCulturalProvider,
+    cycling: OSMCyclingProvider,
+    delivery: OSMDeliveryProvider,
+    disasterAccess: OSMDisasterAccessProvider,
+    evCharging: OSMEVChargingProvider,
+    earthquake: OSMEarthquakeProvider,
+    elevation: OSMElevationProvider,
+    emergency: OSMEmergencyProvider,
+    feature: OSMFeatureProvider,
+    fire: OSMFireProvider,
+    fireRisk: OSMFireRiskProvider,
+    fireStationDistance: OSMFireStationDistanceProvider,
+    fitness: OSMFitnessProvider,
+    flood: OSMFloodProovider,
+    green: OSMGreenProvider,
+    grocery: OSMGroceryProvider,
+    hazard: OSMHazardProvider,
+    heatStress: OSMHeatStressProvider,
+    heatmap: OSMHeatmapProvider,
+    hospitalDetail: OSMHospitalDetailProvider,
+    hospitalDistance: OSMHospitalDistanceProvider,
+    hydrantDistance: OSMHydrantDistanceProvider,
+    industrial: OSMIndustrialProvider,
+    kidFriend: OSMKidFriendProvider,
+    landValue: OSMLandValueProvider,
+    landuse: OSMLanduseProvider,
+    lighting: OSMLightingProvider,
+    marina: OSMMarinaProvider,
+    nightlife: OSMNightlifeProvider,
+    noiseActivity: OSMNoiseActivityProvider,
+    noiseBarrier: OSMNoiseBarrierProvider,
+    noiseHeatmap: OSMNoiseHeatmapProvider,
+    noise: OSMNoiseProvider,
+    noiseRoute: OSMNoiseRouteProvider,
+    parking: OSMParkingProvider,
+    petFriendly: OSMPetFriendlyProvider,
+    pollution: OSMPollutionProvider,
+    population: OSMPopulationProvider,
+    publicTransportation: OSMPublicTransportationProvider,
+    quietRouting: OSMQuietRoutingProvider,
+    restaurantDetail: OSMRestaurantDetailProvider,
+    roadQuality: OSMRoadQualityProvider,
+    roadWidth: OSMRoadWidthProvider,
+    routing: OSMRoutingProvider,
+    safety: OSMSafetyProvider,
+    scenic: OSMScenicProvider,
+    schoolDistance: OSMSchoolDistanceProvider,
+    search: OSMSearchProvider,
+    seniorFriend: OSMSeniorFriendProvider,
+    shade: OSMShadeProvider,
+    sidewalk: OSMSidewalkProvider,
+    slope: OSMSlopeProvider,
+    snow: OSMSnowProvider,
+    solar: OSMSolarProvider,
+    speed: OSMSpeedProvider,
+    tourismDetail: OSMTourismDetailProvider,
+    tourism: OSMTourismProvider,
+    traffic: OSMTrafficProvider,
+    transitDistance: OSMTransitDistanceProvider,
+    transit: OSMTransitProvider,
+    transitQuality: OSMTransitQualityProvider,
+    treeCanopy: OSMTreeCanopyProvider,
+    turnRestriction: OSMTurnRestrictionProvider,
+    utility: OSMUtilityProvider,
+    walkTime: OSMWalkTimeProvider,
+    walkability: OSMWalkabilityProvider,
+    waste: OSMWasteProvider,
+    water: OSMWaterProvider,
+    weather: OSMWeatherProvider,
+    isochrone: OSMLsochroneProvider
+  },
+
+  skate: {
+    flow: SkateFlowProvider,
+    hazard: SkateHazardProvider,
+    lighting: SkateLightingProvider,
+    park: SkateParkProvider,
+    routeSafety: SkateRouteSafetyProvider,
+    slope: SkateSlopeProvider,
+    spotFinder: SkateSpotFinderProvider,
+    surface: SkateSurfaceQualityProvider,
+    traffic: SkateTrafficProvider,
+    vibe: SkateVibeProvider
+  },
+
+  tree: {
+    access: TreeAccessProvider,
+    density: TreeDensityProvider,
+    dropZone: TreeDropZoneProvider,
+    equipmentAccess: TreeEquipmentAccessProvider,
+    hazardTree: TreeHazardTreeProvider,
+    jobEstimator: TreeJobEstimatorProvider,
+    powerlineRisk: TreePowerlineRiskProvider,
+    species: TreeSpeciesProvider,
+    stormDamage: TreeStormDamageProvider,
+    worksiteSuitability: TreeWorksiteSuitabilityProvider,
+    riskAssessment: TreeRiskAssessmentProvider
+  }
+};
