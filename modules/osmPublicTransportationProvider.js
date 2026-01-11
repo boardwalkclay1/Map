@@ -1,20 +1,52 @@
-import { OSMPublicTransportationProvider } from "./osmPublicTransportationProvider.js";
+// modules/osmPublicTransportationProvider.js
 
-export class OSMTransitQualityProvider {
+export class OSMPublicTransportationProvider {
   constructor() {
-    this.transit = new OSMPublicTransportationProvider();
+    // You can add API keys or config here later if needed
   }
 
-  async getQualityScore(bbox) {
-    const stops = await this.transit.getStops(bbox);
-    if (!stops.length) return 0;
+  /**
+   * Fetch transit stops inside a bounding box.
+   * bbox = [minLon, minLat, maxLon, maxLat]
+   */
+  async getStops(bbox) {
+    const [minLon, minLat, maxLon, maxLat] = bbox;
 
-    let score = 0;
+    const url = `https://overpass-api.de/api/interpreter?data=[out:json];
+      node["public_transport"="platform"](${minLat},${minLon},${maxLat},${maxLon});
+      out;`;
 
-    for (const stop of stops) {
-      if (stop.frequency) score += stop.frequency;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data.elements) return [];
+
+      return data.elements.map(el => ({
+        id: el.id,
+        lat: el.lat,
+        lon: el.lon,
+        name: el.tags?.name || "Unnamed Stop",
+        frequency: this._estimateFrequency(el.tags)
+      }));
+    } catch (err) {
+      console.error("Transit provider error:", err);
+      return [];
+    }
+  }
+
+  /**
+   * Simple scoring function for transit frequency.
+   * You can improve this later.
+   */
+  _estimateFrequency(tags) {
+    if (!tags) return 0;
+
+    if (tags.interval) {
+      const interval = parseInt(tags.interval, 10);
+      return interval > 0 ? 60 / interval : 0;
     }
 
-    return score / stops.length;
+    return 1; // default minimal service
   }
 }
