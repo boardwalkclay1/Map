@@ -1,5 +1,5 @@
 // -----------------------------------------------------
-// CORE MAP ENGINE (ALL IN /modules/)
+// CORE MAP ENGINE
 // -----------------------------------------------------
 import { MapCore } from "./modules/mapCore.js";
 import { LayerManager } from "./modules/layerManager.js";
@@ -13,19 +13,19 @@ import { PerfMonitor } from "./modules/perfMonitor.js";
 import { StreetViewShell } from "./modules/streetViewShell.js";
 
 // -----------------------------------------------------
-// OSM PROVIDERS (ALL IN /modules/)
+// OSM PROVIDERS
 // -----------------------------------------------------
 import { OSMAccessibilityProvider } from "./modules/osmAccessibilityProvider.js";
 import { OSMAccessibilityScoreProvider } from "./modules/osmAccessibilityScoreProvider.js";
-import { OSMAdressProvider } from "./modules/osmAdressProvider.js";
-import { OSMAitQualityProvider } from "./modules/osmAitQualityProvider.js";
+import { OSMAddressProvider } from "./modules/osmAddressProvider.js";
+import { OSMAirQualityProvider } from "./modules/osmAirQualityProvider.js";
 import { OSMAmenityProvider } from "./modules/osmAmenityProvider.js";
 import { OSMBikeabilityProvider } from "./modules/osmBikeabilityProvider.js";
 import { OSMBoundaryProvider } from "./modules/osmBoundaryProvider.js";
 import { OSMBridgeDetailProvider } from "./modules/osmBridgeDetailProvider.js";
-import { OSMBridgeProvidr } from "./modules/osmBridgeProvidr.js";
+import { OSMBridgeProvider } from "./modules/osmBridgeProvider.js";
 import { OSMBuildingHeightProvider } from "./modules/osmBuildingHeightProvider.js";
-import { OSMCafeProvidr } from "./modules/osmCafeProvidr.js";
+import { OSMCafeProvider } from "./modules/osmCafeProvider.js";
 import { OSMCemeteryProvider } from "./modules/osmCemeteryProvider.js";
 import { OSMChargingDetailProvidr } from "./modules/osmChargingDetailProvidr.js";
 import { OSMClusterProvider } from "./modules/osmClusterProvider.js";
@@ -89,8 +89,8 @@ import { OSMTourismDetailProvider } from "./modules/osmTourismDetailProvider.js"
 import { OSMTourismProvider } from "./modules/osmTourismProvider.js";
 import { OSMTrafficProvider } from "./modules/osmTrafficProvider.js";
 import { OSMTransitDistanceProvider } from "./modules/osmTransitDistanceProvider.js";
-import { OSMTransitProvidr } from "./modules/osmTransitProvidr.js";
-import { OSMTransitQualityProvidr } from "./modules/osmTransitQualityProvidr.js";
+import { OSMTransitProvider } from "./modules/osmTransitProvider.js";
+import { OSMTransitQualityProvider } from "./modules/osmTransitQualityProvider.js";
 import { OSMTreeCanopyProvider } from "./modules/osmTreeCanopyProvider.js";
 import { OSMTurnRestrictionProvider } from "./modules/osmTurnRestrictionProvider.js";
 import { OSMUtilityProvider } from "./modules/osmUtilityProvider.js";
@@ -102,7 +102,7 @@ import { OSMWeatherProvider } from "./modules/osmWeatherProvider.js";
 import { OSMLsochroneProvider } from "./modules/osmlsochroneProvider.js";
 
 // -----------------------------------------------------
-// SKATE PROVIDERS (ALL IN /modules/)
+// SKATE PROVIDERS
 // -----------------------------------------------------
 import { SkateFlowProvider } from "./modules/skateFlowProvider.js";
 import { SkateHazardProvider } from "./modules/skateHazardProvider.js";
@@ -116,7 +116,7 @@ import { SkateTrafficProvider } from "./modules/skateTrafficProvider.js";
 import { SkateVibeProvider } from "./modules/skateVibeProvider.js";
 
 // -----------------------------------------------------
-// TREE PROVIDERS (ALL IN /modules/tree/)
+// TREE PROVIDERS
 // -----------------------------------------------------
 import { TreeAccessProvider } from "./modules/tree/treeAccessProvider.js";
 import { TreeDensityProvider } from "./modules/tree/treeDensityProvider.js";
