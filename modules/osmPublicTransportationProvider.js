@@ -1,9 +1,7 @@
 // modules/osmPublicTransportationProvider.js
 
 export class OSMPublicTransportationProvider {
-  constructor() {
-    // You can add API keys or config here later if needed
-  }
+  constructor() {}
 
   /**
    * Fetch transit stops inside a bounding box.
@@ -37,7 +35,6 @@ export class OSMPublicTransportationProvider {
 
   /**
    * Simple scoring function for transit frequency.
-   * You can improve this later.
    */
   _estimateFrequency(tags) {
     if (!tags) return 0;
@@ -47,6 +44,6 @@ export class OSMPublicTransportationProvider {
       return interval > 0 ? 60 / interval : 0;
     }
 
-    return 1; // default minimal service
+    return 1;
   }
 }
