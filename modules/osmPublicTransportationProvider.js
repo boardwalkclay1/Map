@@ -1,22 +1,20 @@
-// modules/osmPublicTransportProvider.js
-import { OSMFeatureProvider } from "./osmFeatureProvider.js";
+import { OSMPublicTransportationProvider } from "./osmPublicTransportationProvider.js";
 
-export class OSMPublicTransportProvider {
+export class OSMTransitQualityProvider {
   constructor() {
-    this.osm = new OSMFeatureProvider();
+    this.transit = new OSMPublicTransportationProvider();
   }
 
-  async getStops(bbox) {
-    return await this.osm.getFeaturesByBBox(bbox, [
-      "node[public_transport=platform]",
-      "node[public_transport=stop_position]"
-    ]);
-  }
+  async getQualityScore(bbox) {
+    const stops = await this.transit.getStops(bbox);
+    if (!stops.length) return 0;
 
-  async getStations(bbox) {
-    return await this.osm.getFeaturesByBBox(bbox, [
-      "node[railway=station]",
-      "way[railway=station]"
-    ]);
+    let score = 0;
+
+    for (const stop of stops) {
+      if (stop.frequency) score += stop.frequency;
+    }
+
+    return score / stops.length;
   }
 }
