@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Cosmic Map Engine</title>
+  <!-- styles unchanged from previous index; keep exactly as you have -->
   <style>
     html, body {
       margin: 0;
@@ -151,8 +152,15 @@
       justify-content: center;
       color: #94a3b8;
       font-size: 12px;
-      padding: 8px;
+      padding: 0;
       text-align: center;
+      background: #000;
+    }
+    #streetview-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
     }
     #streetview-pegman {
       width: 24px;
@@ -216,12 +224,11 @@
 
     <div id="streetview-panel">
       <div id="streetview-header">
-        <span>Street View (shell)</span>
+        <span>Street View</span>
         <button id="streetview-close">✕</button>
       </div>
       <div id="streetview-content">
-        Drop Pegman on the map to simulate a street-view point.<br />
-        This panel is wired for a real panorama engine.
+        <canvas id="streetview-canvas"></canvas>
       </div>
     </div>
 
@@ -238,6 +245,7 @@
 
   <script type="module">
     import { StorageEngine } from './modules/storageEngine.js';
+    import { TileCacheEngine } from './modules/tileCacheEngine.js';
     import { MapCore } from './modules/mapCore.js';
     import { MarkerEngine } from './modules/markerEngine.js';
     import { StreetViewShell } from './modules/streetViewShell.js';
@@ -256,8 +264,22 @@
       overfetchTiles: 1,
       initialCenter: { lat: 33.7490, lng: -84.3880 }, // Atlanta
       initialZoom: 12,
-      storageKey: 'cosmicMapState_v1'
+      storageKey: 'cosmicMapState_v1',
+      tileCacheName: 'cosmicTileCache_v1',
+      offlineTilesEnabled: true
     };
+
+    // Simple pano registry: you swap in your own 360s here.
+    // key: string (custom id), each has lat,lng and local or remote image URL.
+    const PANO_REGISTRY = [
+      {
+        id: 'atlanta-demo',
+        lat: 33.7490,
+        lng: -84.3880,
+        imageUrl: './panos/atlanta_360_equirect.jpg'
+      }
+      // add more { id, lat, lng, imageUrl } entries as needed
+    ];
 
     window.addEventListener('DOMContentLoaded', () => {
       const mapEl = document.getElementById('map');
@@ -268,9 +290,13 @@
       const layerPanel = document.getElementById('layer-panel');
 
       const storage = new StorageEngine(MAP_CONFIG.storageKey);
-      const mapCore = new MapCore(mapEl, tileLayer, MAP_CONFIG, storage);
+      const tileCache = MAP_CONFIG.offlineTilesEnabled
+        ? new TileCacheEngine(MAP_CONFIG.tileCacheName)
+        : null;
+
+      const mapCore = new MapCore(mapEl, tileLayer, MAP_CONFIG, storage, tileCache);
       const markerEngine = new MarkerEngine(mapCore, markerLayer, storage);
-      const streetViewShell = new StreetViewShell(mapCore);
+      const streetViewShell = new StreetViewShell(mapCore, PANO_REGISTRY);
 
       const popupEngine = new PopupEngine(mapCore);
       const drawingEngine = new DrawingEngine(mapCore, popupEngine);
