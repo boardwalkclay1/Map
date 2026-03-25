@@ -1,9 +1,120 @@
-// src/app/App.js
-import { EventBus } from "../core/EventBus.js";
-import { Layer, LayerManager } from "../core/layers.js";
-import { Plugin, PluginManager } from "../core/plugins.js";
+// /assets/js/app.js
 
-export default class App {
+// Simple event bus
+class EventBus {
+  constructor() {
+    this.listeners = new Map();
+  }
+
+  on(event, handler) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, new Set());
+    }
+    this.listeners.get(event).add(handler);
+    return () => this.off(event, handler);
+  }
+
+  off(event, handler) {
+    if (!this.listeners.has(event)) return;
+    this.listeners.get(event).delete(handler);
+  }
+
+  emit(event, payload) {
+    if (!this.listeners.has(event)) return;
+    for (const handler of this.listeners.get(event)) {
+      handler(payload);
+    }
+  }
+}
+
+// Base layer + manager
+class Layer {
+  constructor(id, options = {}) {
+    this.id = id;
+    this.options = options;
+  }
+
+  attach(app) {
+    this.app = app;
+  }
+
+  add() {}
+  remove() {}
+  update(data) {}
+}
+
+class LayerManager {
+  constructor(app) {
+    this.app = app;
+    this.layers = new Map();
+  }
+
+  addLayer(layer) {
+    layer.attach(this.app);
+    this.layers.set(layer.id, layer);
+    layer.add();
+    this.app.events.emit("layer:added", { id: layer.id });
+  }
+
+  removeLayer(id) {
+    const layer = this.layers.get(id);
+    if (!layer) return;
+    layer.remove();
+    this.layers.delete(id);
+    this.app.events.emit("layer:removed", { id });
+  }
+
+  getLayer(id) {
+    return this.layers.get(id);
+  }
+}
+
+// Base plugin + manager
+class Plugin {
+  constructor(id, options = {}) {
+    this.id = id;
+    this.options = options;
+  }
+
+  attach(app) {
+    this.app = app;
+  }
+
+  onInit() {}
+  onMount() {}
+  onUnmount() {}
+}
+
+class PluginManager {
+  constructor(app) {
+    this.app = app;
+    this.plugins = new Map();
+  }
+
+  register(plugin) {
+    plugin.attach(this.app);
+    this.plugins.set(plugin.id, plugin);
+    plugin.onInit();
+    this.app.events.emit("plugin:registered", { id: plugin.id });
+  }
+
+  mount(id) {
+    const plugin = this.plugins.get(id);
+    if (!plugin) return;
+    plugin.onMount();
+    this.app.events.emit("plugin:mounted", { id });
+  }
+
+  unmount(id) {
+    const plugin = this.plugins.get(id);
+    if (!plugin) return;
+    plugin.onUnmount();
+    this.app.events.emit("plugin:unmounted", { id });
+  }
+}
+
+// Core app with real MapLibre map
+class App {
   constructor(mapContainerId = "map", uiContainerId = "ui") {
     this.mapContainer = document.getElementById(mapContainerId);
     this.uiContainer = document.getElementById(uiContainerId);
@@ -17,23 +128,16 @@ export default class App {
   }
 
   _initMapSurface() {
-    const label = document.createElement("div");
-    label.textContent = "Map surface ready – plug your engine in here.";
-    label.style.position = "absolute";
-    label.style.bottom = "12px";
-    label.style.left = "12px";
-    label.style.padding = "4px 8px";
-    label.style.fontSize = "11px";
-    label.style.borderRadius = "999px";
-    label.style.background = "rgba(0,0,0,0.6)";
-    label.style.color = "#fff";
-    label.style.pointerEvents = "none";
-    this.mapContainer.appendChild(label);
-
-    this.map = {
+    // REAL MapLibre map
+    this.map = new maplibregl.Map({
       container: this.mapContainer,
-      // later: setCenter, setZoom, addSource, addLayer, etc.
-    };
+      style: "https://demotiles.maplibre.org/style.json",
+      center: [-84.39, 33.75], // Atlanta-ish
+      zoom: 10
+    });
+
+    // Optional: navigation controls
+    this.map.addControl(new maplibregl.NavigationControl(), "top-right");
   }
 
   _initBaseUI() {
@@ -89,32 +193,33 @@ export default class App {
     pluginCount.textContent = this.plugins.plugins.size;
   }
 
+  // Demo layer: drops a marker at map center using MapLibre
   _addDemoLayer() {
     if (this.layers.getLayer("demo-layer")) return;
 
     class DemoLayer extends Layer {
       add() {
-        const marker = document.createElement("div");
-        marker.textContent = "●";
-        marker.style.position = "absolute";
-        marker.style.top = "50%";
-        marker.style.left = "50%";
-        marker.style.transform = "translate(-50%, -50%)";
-        marker.style.fontSize = "32px";
-        marker.style.color = "#4da3ff";
-        marker.dataset.layerId = this.id;
-        this.app.map.container.appendChild(marker);
-        this._el = marker;
+        const el = document.createElement("div");
+        el.style.width = "16px";
+        el.style.height = "16px";
+        el.style.borderRadius = "50%";
+        el.style.background = "#4da3ff";
+        el.style.border = "2px solid white";
+
+        this.marker = new maplibregl.Marker(el)
+          .setLngLat(this.options.lngLat || this.app.map.getCenter())
+          .addTo(this.app.map);
       }
 
       remove() {
-        if (this._el) {
-          this._el.remove();
+        if (this.marker) {
+          this.marker.remove();
         }
       }
     }
 
-    const layer = new DemoLayer("demo-layer");
+    const center = this.map.getCenter();
+    const layer = new DemoLayer("demo-layer", { lngLat: center });
     this.layers.addLayer(layer);
   }
 
@@ -155,3 +260,9 @@ export default class App {
     this.plugins.mount("demo-plugin");
   }
 }
+
+// Boot
+window.addEventListener("DOMContentLoaded", () => {
+  window.app = new App();
+  console.log("App ready with a real MapLibre map.");
+});
