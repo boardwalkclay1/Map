@@ -4,20 +4,33 @@
   <meta charset="UTF-8" />
   <title>Modular Map App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Global styles -->
   <link rel="stylesheet" href="/styles/style.css" />
 </head>
+
 <body>
   <div id="app">
+
+    <!-- MAP SURFACE -->
     <div id="map"></div>
+
+    <!-- UI LAYER -->
     <div id="ui">
+
+      <!-- TOOLBAR -->
       <header id="toolbar">
         <h1>Modular Map</h1>
         <div id="toolbar-buttons"></div>
       </header>
+
+      <!-- PANELS -->
       <div id="panels"></div>
+
     </div>
   </div>
 
+  <!-- ES MODULE ENTRYPOINT -->
   <script type="module" src="/assets/js/app.js"></script>
 </body>
 </html>
