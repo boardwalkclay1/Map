@@ -7,6 +7,12 @@
 
   <!-- Global styles -->
   <link rel="stylesheet" href="/styles/style.css" />
+
+  <!-- MapLibre styles -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css"
+  />
 </head>
 
 <body>
@@ -17,20 +23,20 @@
 
     <!-- UI LAYER -->
     <div id="ui">
-
-      <!-- TOOLBAR -->
       <header id="toolbar">
         <h1>Modular Map</h1>
         <div id="toolbar-buttons"></div>
       </header>
 
-      <!-- PANELS -->
       <div id="panels"></div>
-
     </div>
+
   </div>
 
-  <!-- ES MODULE ENTRYPOINT -->
+  <!-- MapLibre engine -->
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+
+  <!-- ES module entrypoint -->
   <script type="module" src="/assets/js/app.js"></script>
 </body>
 </html>
